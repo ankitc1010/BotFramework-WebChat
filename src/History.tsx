@@ -9,7 +9,8 @@ export interface HistoryProps {
     format: FormatState,
     size: SizeState,
     activities: Activity[],
-
+    chatBotIconUrl: string,
+    userIconUrl: string,
     setMeasurements: (carouselMargin: number) => void,
     onClickRetry: (activity: Activity) => void,
     onClickCardAction: () => void,
@@ -46,11 +47,11 @@ export class HistoryView extends React.Component<HistoryProps, {}> {
 
             // Subtract the padding from the offsetParent's width to get the width of the content
             const maxContentWidth = (this.carouselActivity.messageDiv.offsetParent as HTMLElement).offsetWidth - paddedWidth;
-            
+
             // Subtract the content width from the chat width to get the margin.
             // Next time we need to get the content width (on a resize) we can use this margin to get the maximum content width
             const carouselMargin = this.props.size.width - maxContentWidth;
-            
+
             konsole.log('history measureMessage ' + carouselMargin);
 
             // Finally, save it away in the Store, which will force another re-render
@@ -76,10 +77,10 @@ export class HistoryView extends React.Component<HistoryProps, {}> {
     }
 
     // In order to do their cool horizontal scrolling thing, Carousels need to know how wide they can be.
-    // So, at startup, we create this mock Carousel activity and measure it. 
+    // So, at startup, we create this mock Carousel activity and measure it.
     private measurableCarousel = () =>
         // find the largest possible message size by forcing a width larger than the chat itself
-        <WrappedActivity 
+        <WrappedActivity
             ref={ x => this.carouselActivity = x }
             activity={ {
                 type: 'message',
@@ -93,6 +94,8 @@ export class HistoryView extends React.Component<HistoryProps, {}> {
             onClickRetry={ null }
             selected={ false }
             showTimestamp={ false }
+            chatBotIconUrl={this.props.chatBotIconUrl}
+            userIconUrl={this.props.userIconUrl}
         >
             <div style={ { width: this.largeWidth } }>&nbsp;</div>
         </WrappedActivity>;
@@ -125,6 +128,8 @@ export class HistoryView extends React.Component<HistoryProps, {}> {
                         showTimestamp={ index === this.props.activities.length - 1 || (index + 1 < this.props.activities.length && suitableInterval(activity, this.props.activities[index + 1])) }
                         selected={ this.props.isSelected(activity) }
                         fromMe={ this.props.isFromMe(activity) }
+                        chatBotIconUrl={this.props.chatBotIconUrl}
+                        userIconUrl={this.props.userIconUrl}
                         onClickActivity={ this.props.onClickActivity(activity) }
                         onClickRetry={ e => {
                             // Since this is a click on an anchor, we need to stop it
@@ -162,7 +167,7 @@ export const History = connect(
         format: state.format,
         size: state.size,
         activities: state.history.activities,
-        // only used to create helper functions below 
+        // only used to create helper functions below
         connectionSelectedActivity: state.connection.selectedActivity,
         selectedActivity: state.history.selectedActivity,
         botConnection: state.connection.botConnection,
@@ -171,7 +176,7 @@ export const History = connect(
         setMeasurements: (carouselMargin: number) => ({ type: 'Set_Measurements', carouselMargin }),
         onClickRetry: (activity: Activity) => ({ type: 'Send_Message_Retry', clientActivityId: activity.channelData.clientActivityId }),
         onClickCardAction: () => ({ type: 'Card_Action_Clicked'}),
-        // only used to create helper functions below 
+        // only used to create helper functions below
         sendMessage
     }, (stateProps: any, dispatchProps: any, ownProps: any): HistoryProps => ({
         // from stateProps
@@ -184,6 +189,8 @@ export const History = connect(
         onClickCardAction: dispatchProps.onClickCardAction,
         // from ownProps
         setFocus: ownProps.setFocus,
+        chatBotIconUrl: ownProps.chatBotIconUrl,
+        userIconUrl: ownProps.userIconUrl,
         // helper functions
         doCardAction: doCardAction(stateProps.botConnection, stateProps.user, stateProps.format.locale, dispatchProps.sendMessage),
         isFromMe: (activity: Activity) => activity.from.id === stateProps.user.id,
@@ -220,6 +227,8 @@ export interface WrappedActivityProps {
     selected: boolean,
     fromMe: boolean,
     format: FormatState,
+    chatBotIconUrl: string,
+    userIconUrl: string,
     onClickActivity: React.MouseEventHandler<HTMLDivElement>,
     onClickRetry: React.MouseEventHandler<HTMLAnchorElement>
 }
@@ -229,6 +238,7 @@ export class WrappedActivity extends React.Component<WrappedActivityProps, {}> {
 
     constructor(props: WrappedActivityProps) {
         super(props);
+        console.log(props.chatBotIconUrl, props.userIconUrl)
     }
 
     render () {
@@ -257,6 +267,7 @@ export class WrappedActivity extends React.Component<WrappedActivityProps, {}> {
         }
 
         const who = this.props.fromMe ? 'me' : 'bot';
+        const imgUrl = this.props.fromMe ? this.props.userIconUrl : this.props.chatBotIconUrl;
 
         const wrapperClassName = classList(
             'wc-message-wrapper',
@@ -271,6 +282,7 @@ export class WrappedActivity extends React.Component<WrappedActivityProps, {}> {
 
         return (
             <div data-activity-id={ this.props.activity.id } className={ wrapperClassName } onClick={ this.props.onClickActivity }>
+                <div className={ 'wc-message-from-'+ who + ' custom-img'}><img src={imgUrl} /></div>
                 <div className={ 'wc-message wc-message-from-' + who } ref={ div => this.messageDiv = div }>
                     <div className={ contentClassName }>
                         <svg className="wc-message-callout">

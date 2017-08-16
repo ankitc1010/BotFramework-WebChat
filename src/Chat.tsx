@@ -22,6 +22,8 @@ export type ActivityOrID = {
 export interface ChatProps {
     user: User,
     bot: User,
+    chatBotIconUrl: string,
+    userIconUrl: string,
     botConnection?: IBotConnection,
     directLine?: DirectLineOptions,
     speechOptions?: SpeechOptions,
@@ -193,7 +195,7 @@ export class Chat extends React.Component<ChatProps, {}> {
                 <div className="wc-chatview-panel" ref={ div => this.chatviewPanel = div }>
                     { header }
                     <MessagePane setFocus={ () => this.setFocus() }>
-                        <History setFocus={ () => this.setFocus() }/>
+                        <History setFocus={ () => this.setFocus() } chatBotIconUrl={this.props.chatBotIconUrl} userIconUrl={this.props.userIconUrl}/>
                     </MessagePane>
                     <Shell />
                     { resize }
