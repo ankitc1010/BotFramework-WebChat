@@ -185,7 +185,7 @@ var WrappedActivity = (function (_super) {
         var wrapperClassName = Chat_1.classList('wc-message-wrapper', this.props.activity.attachmentLayout || 'list', this.props.onClickActivity && 'clickable');
         var contentClassName = Chat_1.classList('wc-message-content', this.props.selected && 'selected');
         return (React.createElement("div", { "data-activity-id": this.props.activity.id, className: wrapperClassName, onClick: this.props.onClickActivity },
-            React.createElement("div", { className: 'wc-message-from-' + who },
+            React.createElement("div", { className: 'wc-message-from-' + who + ' custom-img' },
                 React.createElement("img", { src: imgUrl })),
             React.createElement("div", { className: 'wc-message wc-message-from-' + who, ref: function (div) { return _this.messageDiv = div; } },
                 React.createElement("div", { className: contentClassName },
