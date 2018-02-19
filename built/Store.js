@@ -14,7 +14,7 @@ exports.shell = function (state, action) {
     }; }
     switch (action.type) {
         case 'Update_Input':
-            return tslib_1.__assign({}, state, { input: action.input, lastInputViaSpeech: action.source == "speech" });
+            return tslib_1.__assign({}, state, { input: action.input, lastInputViaSpeech: action.source == 'speech' });
         case 'Listening_Start':
             return tslib_1.__assign({}, state, { listening: true });
         case 'Listening_Stop':
@@ -85,64 +85,90 @@ var copyArrayWithUpdatedItem = function (array, i, item) { return array.slice(0,
 exports.history = function (state, action) {
     if (state === void 0) { state = {
         activities: [],
-        clientActivityBase: Date.now().toString() + Math.random().toString().substr(1) + '.',
+        clientActivityBase: Date.now().toString() +
+            Math.random()
+                .toString()
+                .substr(1) +
+            '.',
         clientActivityCounter: 0,
         selectedActivity: null
     }; }
-    Chat_1.konsole.log("history action", action);
+    Chat_1.konsole.log('history action', action);
     switch (action.type) {
         case 'Receive_Sent_Message': {
-            if (!action.activity.channelData || !action.activity.channelData.clientActivityId) {
+            if (!action.activity.channelData ||
+                !action.activity.channelData.clientActivityId) {
                 // only postBack messages don't have clientActivityId, and these shouldn't be added to the history
                 return state;
             }
             var i_1 = state.activities.findIndex(function (activity) {
-                return activity.channelData && activity.channelData.clientActivityId === action.activity.channelData.clientActivityId;
+                return activity.channelData &&
+                    activity.channelData.clientActivityId ===
+                        action.activity.channelData.clientActivityId;
             });
             if (i_1 !== -1) {
                 var activity_1 = state.activities[i_1];
-                return tslib_1.__assign({}, state, { activities: copyArrayWithUpdatedItem(state.activities, i_1, activity_1), selectedActivity: state.selectedActivity === activity_1 ? action.activity : state.selectedActivity });
+                return tslib_1.__assign({}, state, { activities: copyArrayWithUpdatedItem(state.activities, i_1, activity_1), selectedActivity: state.selectedActivity === activity_1
+                        ? action.activity
+                        : state.selectedActivity });
             }
             // else fall through and treat this as a new message
         }
         case 'Receive_Message':
-            if (state.activities.find(function (a) { return a.id === action.activity.id; }))
+            if (state.activities.find(function (a) { return a.id === action.activity.id; }) ||
+                action.activity.recipient)
                 return state; // don't allow duplicate messages
-            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activity) { return activity.type !== "typing"; }).concat([
+            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activity) { return activity.type !== 'typing'; }).concat([
                     action.activity
-                ], state.activities.filter(function (activity) { return activity.from.id !== action.activity.from.id && activity.type === "typing"; })) });
+                ], state.activities.filter(function (activity) {
+                    return activity.from.id !== action.activity.from.id &&
+                        activity.type === 'typing';
+                })) });
         case 'Send_Message':
-            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activity) { return activity.type !== "typing"; }).concat([
-                    tslib_1.__assign({}, action.activity, { timestamp: (new Date()).toISOString(), channelData: { clientActivityId: state.clientActivityBase + state.clientActivityCounter } })
-                ], state.activities.filter(function (activity) { return activity.type === "typing"; })), clientActivityCounter: state.clientActivityCounter + 1 });
+            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activity) { return activity.type !== 'typing'; }).concat([
+                    tslib_1.__assign({}, action.activity, { timestamp: new Date().toISOString(), channelData: {
+                            clientActivityId: state.clientActivityBase + state.clientActivityCounter
+                        } })
+                ], state.activities.filter(function (activity) { return activity.type === 'typing'; })), clientActivityCounter: state.clientActivityCounter + 1 });
         case 'Send_Message_Retry': {
             var activity_2 = state.activities.find(function (activity) {
-                return activity.channelData && activity.channelData.clientActivityId === action.clientActivityId;
+                return activity.channelData &&
+                    activity.channelData.clientActivityId === action.clientActivityId;
             });
             var newActivity_1 = activity_2.id === undefined ? activity_2 : tslib_1.__assign({}, activity_2, { id: undefined });
-            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activityT) { return activityT.type !== "typing" && activityT !== activity_2; }).concat([
+            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activityT) { return activityT.type !== 'typing' && activityT !== activity_2; }).concat([
                     newActivity_1
-                ], state.activities.filter(function (activity) { return activity.type === "typing"; })), selectedActivity: state.selectedActivity === activity_2 ? newActivity_1 : state.selectedActivity });
+                ], state.activities.filter(function (activity) { return activity.type === 'typing'; })), selectedActivity: state.selectedActivity === activity_2
+                    ? newActivity_1
+                    : state.selectedActivity });
         }
         case 'Send_Message_Succeed':
         case 'Send_Message_Fail': {
             var i_2 = state.activities.findIndex(function (activity) {
-                return activity.channelData && activity.channelData.clientActivityId === action.clientActivityId;
+                return activity.channelData &&
+                    activity.channelData.clientActivityId === action.clientActivityId;
             });
             if (i_2 === -1)
                 return state;
             var activity_3 = state.activities[i_2];
-            if (activity_3.id && activity_3.id != "retry")
+            if (activity_3.id && activity_3.id != 'retry')
                 return state;
             var newActivity_2 = tslib_1.__assign({}, activity_3, { id: action.type === 'Send_Message_Succeed' ? action.id : null });
-            return tslib_1.__assign({}, state, { activities: copyArrayWithUpdatedItem(state.activities, i_2, newActivity_2), clientActivityCounter: state.clientActivityCounter + 1, selectedActivity: state.selectedActivity === activity_3 ? newActivity_2 : state.selectedActivity });
+            return tslib_1.__assign({}, state, { activities: copyArrayWithUpdatedItem(state.activities, i_2, newActivity_2), clientActivityCounter: state.clientActivityCounter + 1, selectedActivity: state.selectedActivity === activity_3
+                    ? newActivity_2
+                    : state.selectedActivity });
         }
         case 'Show_Typing':
-            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activity) { return activity.type !== "typing"; }).concat(state.activities.filter(function (activity) { return activity.from.id !== action.activity.from.id && activity.type === "typing"; }), [
+            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activity) { return activity.type !== 'typing'; }).concat(state.activities.filter(function (activity) {
+                    return activity.from.id !== action.activity.from.id &&
+                        activity.type === 'typing';
+                }), [
                     action.activity
                 ]) });
         case 'Clear_Typing':
-            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activity) { return activity.id !== action.id; }), selectedActivity: state.selectedActivity && state.selectedActivity.id === action.id ? null : state.selectedActivity });
+            return tslib_1.__assign({}, state, { activities: state.activities.filter(function (activity) { return activity.id !== action.id; }), selectedActivity: state.selectedActivity && state.selectedActivity.id === action.id
+                    ? null
+                    : state.selectedActivity });
         case 'Select_Activity':
             if (action.selectedActivity === state.selectedActivity)
                 return state;
@@ -151,7 +177,9 @@ exports.history = function (state, action) {
             var i = state.activities.findIndex(function (activity) { return activity === action.message; });
             var activity = state.activities[i];
             var newActivity = tslib_1.__assign({}, activity, { suggestedActions: undefined });
-            return tslib_1.__assign({}, state, { activities: copyArrayWithUpdatedItem(state.activities, i, newActivity), selectedActivity: state.selectedActivity === activity ? newActivity : state.selectedActivity });
+            return tslib_1.__assign({}, state, { activities: copyArrayWithUpdatedItem(state.activities, i, newActivity), selectedActivity: state.selectedActivity === activity
+                    ? newActivity
+                    : state.selectedActivity });
         default:
             return state;
     }
@@ -159,15 +187,19 @@ exports.history = function (state, action) {
 var nullAction = { type: null };
 var speakFromMsg = function (msg, fallbackLocale) {
     var speak = msg.speak;
-    if (!speak && msg.textFormat == null || msg.textFormat == "plain")
+    if ((!speak && msg.textFormat == null) || msg.textFormat == 'plain')
         speak = msg.text;
-    if (!speak && msg.channelData && msg.channelData.speechOutput && msg.channelData.speechOutput.speakText)
+    if (!speak &&
+        msg.channelData &&
+        msg.channelData.speechOutput &&
+        msg.channelData.speechOutput.speakText)
         speak = msg.channelData.speechOutput.speakText;
     if (!speak && msg.attachments && msg.attachments.length > 0)
         for (var i = 0; i < msg.attachments.length; i++) {
             var anymsg = msg;
-            if (anymsg.attachments[i]["content"] && anymsg.attachments[i]["content"]["speak"]) {
-                speak = anymsg.attachments[i]["content"]["speak"];
+            if (anymsg.attachments[i]['content'] &&
+                anymsg.attachments[i]['content']['speak']) {
+                speak = anymsg.attachments[i]['content']['speak'];
                 break;
             }
         }
@@ -175,7 +207,9 @@ var speakFromMsg = function (msg, fallbackLocale) {
         type: 'Speak_SSML',
         ssml: speak,
         locale: msg.locale || fallbackLocale,
-        autoListenAfterSpeak: (msg.inputHint == "expectingInput") || (msg.channelData && msg.channelData.botState == "WaitingForAnswerToQuestion"),
+        autoListenAfterSpeak: msg.inputHint == 'expectingInput' ||
+            (msg.channelData &&
+                msg.channelData.botState == 'WaitingForAnswerToQuestion')
     };
 };
 // Epics - chain actions together with async operations
@@ -194,21 +228,23 @@ require("rxjs/add/observable/bindCallback");
 require("rxjs/add/observable/empty");
 require("rxjs/add/observable/of");
 var sendMessage = function (action$, store) {
-    return action$.ofType('Send_Message')
-        .map(function (action) {
+    return action$.ofType('Send_Message').map(function (action) {
         var state = store.getState();
-        var clientActivityId = state.history.clientActivityBase + (state.history.clientActivityCounter - 1);
+        var clientActivityId = state.history.clientActivityBase +
+            (state.history.clientActivityCounter - 1);
         return { type: 'Send_Message_Try', clientActivityId: clientActivityId };
     });
 };
 var trySendMessage = function (action$, store) {
-    return action$.ofType('Send_Message_Try')
-        .flatMap(function (action) {
+    return action$.ofType('Send_Message_Try').flatMap(function (action) {
         var state = store.getState();
         var clientActivityId = action.clientActivityId;
-        var activity = state.history.activities.find(function (activity) { return activity.channelData && activity.channelData.clientActivityId === clientActivityId; });
+        var activity = state.history.activities.find(function (activity) {
+            return activity.channelData &&
+                activity.channelData.clientActivityId === clientActivityId;
+        });
         if (!activity) {
-            Chat_1.konsole.log("trySendMessage: activity not found");
+            Chat_1.konsole.log('trySendMessage: activity not found');
             return Observable_1.Observable.empty();
         }
         if (state.history.clientActivityCounter == 1) {
@@ -216,99 +252,153 @@ var trySendMessage = function (action$, store) {
                 type: 'ClientCapabilities',
                 requiresBotState: true,
                 supportsTts: true,
-                supportsListening: true,
+                supportsListening: true
+                // Todo: consider implementing acknowledgesTts: true
             };
-            activity.entities = activity.entities == null ? [capabilities] : activity.entities.concat([capabilities]);
+            activity.entities =
+                activity.entities == null
+                    ? [capabilities]
+                    : activity.entities.concat([capabilities]);
         }
-        return state.connection.botConnection.postActivity(activity)
-            .map(function (id) { return ({ type: 'Send_Message_Succeed', clientActivityId: clientActivityId, id: id }); })
-            .catch(function (error) { return Observable_1.Observable.of({ type: 'Send_Message_Fail', clientActivityId: clientActivityId }); });
+        return state.connection.botConnection
+            .postActivity(activity)
+            .map(function (id) {
+            return ({
+                type: 'Send_Message_Succeed',
+                clientActivityId: clientActivityId,
+                id: id
+            });
+        })
+            .catch(function (error) {
+            return Observable_1.Observable.of({
+                type: 'Send_Message_Fail',
+                clientActivityId: clientActivityId
+            });
+        });
     });
 };
 var speakObservable = Observable_1.Observable.bindCallback(SpeechModule_1.Speech.SpeechSynthesizer.speak);
 var speakSSML = function (action$, store) {
-    return action$.ofType('Speak_SSML')
+    return action$
+        .ofType('Speak_SSML')
         .filter(function (action) { return action.ssml; })
         .mergeMap(function (action) {
         var onSpeakingStarted = null;
         var onSpeakingFinished = function () { return nullAction; };
         if (action.autoListenAfterSpeak) {
             onSpeakingStarted = function () { return SpeechModule_1.Speech.SpeechRecognizer.warmup(); };
-            onSpeakingFinished = function () { return ({ type: 'Listening_Starting' }); };
+            onSpeakingFinished = function () {
+                return ({ type: 'Listening_Starting' });
+            };
         }
         var call$ = speakObservable(action.ssml, action.locale, onSpeakingStarted);
-        return call$.map(onSpeakingFinished)
+        return call$
+            .map(onSpeakingFinished)
             .catch(function (error) { return Observable_1.Observable.of(nullAction); });
     })
-        .merge(action$.ofType('Speak_SSML').map(function (_) { return ({ type: 'Listening_Stop' }); }));
+        .merge(action$
+        .ofType('Speak_SSML')
+        .map(function (_) { return ({ type: 'Listening_Stop' }); }));
 };
 var speakOnMessageReceived = function (action$, store) {
-    return action$.ofType('Receive_Message')
-        .filter(function (action) { return action.activity && store.getState().shell.lastInputViaSpeech; })
-        .map(function (action) { return speakFromMsg(action.activity, store.getState().format.locale); });
+    return action$
+        .ofType('Receive_Message')
+        .filter(function (action) {
+        return action.activity &&
+            store.getState().shell.lastInputViaSpeech;
+    })
+        .map(function (action) {
+        return speakFromMsg(action.activity, store.getState().format.locale);
+    });
 };
 var stopSpeaking = function (action$) {
-    return action$.ofType('Update_Input', 'Listening_Starting', 'Send_Message', 'Card_Action_Clicked', 'Stop_Speaking')
+    return action$
+        .ofType('Update_Input', 'Listening_Starting', 'Send_Message', 'Card_Action_Clicked', 'Stop_Speaking')
         .do(SpeechModule_1.Speech.SpeechSynthesizer.stopSpeaking)
         .map(function (_) { return nullAction; });
 };
 var stopListening = function (action$) {
-    return action$.ofType('Listening_Stop', 'Card_Action_Clicked')
+    return action$
+        .ofType('Listening_Stop', 'Card_Action_Clicked')
         .do(SpeechModule_1.Speech.SpeechRecognizer.stopRecognizing)
         .map(function (_) { return nullAction; });
 };
 var startListening = function (action$, store) {
-    return action$.ofType('Listening_Starting')
+    return action$
+        .ofType('Listening_Starting')
         .do(function (action) {
         var locale = store.getState().format.locale;
-        var onIntermediateResult = function (srText) { store.dispatch({ type: 'Update_Input', input: srText, source: "speech" }); };
+        var onIntermediateResult = function (srText) {
+            store.dispatch({
+                type: 'Update_Input',
+                input: srText,
+                source: 'speech'
+            });
+        };
         var onFinalResult = function (srText) {
-            srText = srText.replace(/^[.\s]+|[.\s]+$/g, "");
+            srText = srText.replace(/^[.\s]+|[.\s]+$/g, '');
             onIntermediateResult(srText);
             store.dispatch({ type: 'Listening_Stop' });
             store.dispatch(Chat_1.sendMessage(srText, store.getState().connection.user, locale));
         };
-        var onAudioStreamStart = function () { store.dispatch({ type: 'Listening_Start' }); };
-        var onRecognitionFailed = function () { store.dispatch({ type: 'Listening_Stop' }); };
+        var onAudioStreamStart = function () {
+            store.dispatch({ type: 'Listening_Start' });
+        };
+        var onRecognitionFailed = function () {
+            store.dispatch({ type: 'Listening_Stop' });
+        };
         SpeechModule_1.Speech.SpeechRecognizer.startRecognizing(locale, onIntermediateResult, onFinalResult, onAudioStreamStart, onRecognitionFailed);
     })
         .map(function (_) { return nullAction; });
 };
 var listeningSilenceTimeout = function (action$, store) {
     var cancelMessages$ = action$.ofType('Update_Input', 'Listening_Stop');
-    return action$.ofType('Listening_Start')
-        .mergeMap(function (action) {
-        return Observable_1.Observable.of(({ type: 'Listening_Stop' }))
+    return action$.ofType('Listening_Start').mergeMap(function (action) {
+        return Observable_1.Observable.of({ type: 'Listening_Stop' })
             .delay(5000)
             .takeUntil(cancelMessages$);
     });
 };
 var retrySendMessage = function (action$) {
-    return action$.ofType('Send_Message_Retry')
-        .map(function (action) { return ({ type: 'Send_Message_Try', clientActivityId: action.clientActivityId }); });
+    return action$
+        .ofType('Send_Message_Retry')
+        .map(function (action) {
+        return ({
+            type: 'Send_Message_Try',
+            clientActivityId: action.clientActivityId
+        });
+    });
 };
 var updateSelectedActivity = function (action$, store) {
-    return action$.ofType('Send_Message_Succeed', 'Send_Message_Fail', 'Show_Typing', 'Clear_Typing')
+    return action$
+        .ofType('Send_Message_Succeed', 'Send_Message_Fail', 'Show_Typing', 'Clear_Typing')
         .map(function (action) {
         var state = store.getState();
         if (state.connection.selectedActivity)
-            state.connection.selectedActivity.next({ activity: state.history.selectedActivity });
+            state.connection.selectedActivity.next({
+                activity: state.history.selectedActivity
+            });
         return nullAction;
     });
 };
 var showTyping = function (action$) {
-    return action$.ofType('Show_Typing')
+    return action$
+        .ofType('Show_Typing')
         .delay(3000)
-        .map(function (action) { return ({ type: 'Clear_Typing', id: action.activity.id }); });
+        .map(function (action) {
+        return ({ type: 'Clear_Typing', id: action.activity.id });
+    });
 };
 var sendTyping = function (action$, store) {
-    return action$.ofType('Update_Input')
+    return action$
+        .ofType('Update_Input')
         .map(function (_) { return store.getState(); })
         .filter(function (state) { return state.shell.sendTyping; })
         .throttleTime(3000)
-        .do(function (_) { return Chat_1.konsole.log("sending typing"); })
+        .do(function (_) { return Chat_1.konsole.log('sending typing'); })
         .flatMap(function (state) {
-        return state.connection.botConnection.postActivity({
+        return state.connection.botConnection
+            .postActivity({
             type: 'typing',
             from: state.connection.user
         })

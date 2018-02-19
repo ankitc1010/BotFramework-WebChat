@@ -12,7 +12,7 @@ export interface ShellState {
 export declare type ShellAction = {
     type: 'Update_Input';
     input: string;
-    source: "text" | "speech";
+    source: 'text' | 'speech';
 } | {
     type: 'Listening_Starting';
 } | {
